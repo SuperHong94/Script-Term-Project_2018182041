@@ -10,7 +10,7 @@ class MainGUI():
         self.window.title("경기도지역화페 가맹점 검색")
         self.window.geometry("1200x600")
         self.searchFrame=Frame(self.window)
-        self.searchFrame.grid(row=10,column=10)
+        self.searchFrame.grid(row=0,column=0)
         Label(self.searchFrame,text="지역", font = ("휴먼매직체",30)).grid(row=0,column=1)
         Label(self.searchFrame,text="상호명", font = ("휴먼매직체",30)).grid(row=1,column=1)
         Label(self.searchFrame,text="업종", font = ("휴먼매직체",30)).grid(row=2,column=1)
@@ -28,7 +28,11 @@ class MainGUI():
 
         Button(self.searchFrame, text="검색하기", font = ("휴먼매직체",20),command=self.search).grid(row=5, column=2, stick=E)
 
-
+        self.resultFrame=Frame(self.window,bg="white")
+        self.resultFrame.grid(row=1,column=0)
+        listBox=Listbox(self.resultFrame,selectmode="extended")
+        listBox.insert(0,"국어")
+        listBox.pack(side=LEFT)
 
         self.window.mainloop()
 
