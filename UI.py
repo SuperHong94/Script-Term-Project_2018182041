@@ -1,16 +1,19 @@
 from tkinter import *
 
-
+WIDTH=1200
+HEIGHT=600
 class MainGUI():
-    startRow=1
     def search(self):
         pass
     def __init__(self):
         self.window=Tk()
         self.window.title("경기도지역화페 가맹점 검색")
         self.window.geometry("1200x600")
-        self.searchFrame=Frame(self.window)
-        self.searchFrame.grid(row=0,column=0)
+        self.window.configure(background='lightBlue')
+
+        self.searchFrame=LabelFrame(self.window)
+        #self.searchFrame.grid(row=0,column=0)
+        self.searchFrame.grid(sticky=W+N,padx=5)
         Label(self.searchFrame,text="지역", font = ("휴먼매직체",30)).grid(row=0,column=1)
         Label(self.searchFrame,text="상호명", font = ("휴먼매직체",30)).grid(row=1,column=1)
         Label(self.searchFrame,text="업종", font = ("휴먼매직체",30)).grid(row=2,column=1)
@@ -28,12 +31,18 @@ class MainGUI():
 
         Button(self.searchFrame, text="검색하기", font = ("휴먼매직체",20),command=self.search).grid(row=5, column=2, stick=E)
 
-        self.resultFrame=Frame(self.window,bg="white")
-        self.resultFrame.grid(row=1,column=0)
-        listBox=Listbox(self.resultFrame,selectmode="extended")
-        listBox.insert(0,"국어")
-        listBox.pack(side=LEFT)
+        self.resultFrame=LabelFrame(self.window,bg="white",width=WIDTH,height=HEIGHT/2)
+        scrollbar = Scrollbar(self.resultFrame,width=17,bd=10)
 
+
+        self.listBox=Listbox(self.resultFrame,selectmode="extended",width=100,height=20,yscrollcommand = scrollbar.set)
+        for line in range(1, 1001):
+            self.listBox.insert(line, str(line) + "/1000")
+
+        self.listBox.pack(side="left")
+        scrollbar.pack(side=RIGHT,fill=Y)
+        scrollbar["command"] = self.listBox.yview
+        self.resultFrame.grid(stick=W + S,padx=5)
         self.window.mainloop()
 
 
