@@ -1,8 +1,26 @@
-#http://apis.data.go.kr/B551182/hospInfoService/getHospBasisList?serviceKey=sea100UMmw23Xycs33F1EQnumONR%2F9ElxBLzkilU9Yr1oT4TrCot8Y2p0jyuJP72x9rG9D8CN5yuEs6AS2sAiw%3D%3D&pageNo=1&numOfRows=10&sidoCd=110000&sgguCd=110019
-import urllib
-import http.client
-conn = http.client.HTTPConnection("apis.data.go.kr")
-conn.request("GET","/B551182/hospInfoService/getHospBasisList?serviceKey=sea100UMmw23Xycs33F1EQnumONR%2F9ElxBLzkilU9Yr1oT4TrCot8Y2p0jyuJP72x9rG9D8CN5yuEs6AS2sAiw%3D%3D&pageNo=1&numOfRows=10&sidoCd=110000&sgguCd=110019")
-req = conn.getresponse()
-print(req.status,req.reason)
-print(req.read().decode('utf-8'))
+from bs4 import BeautifulSoup
+import requests
+
+cityName="부천시"
+api="https://openapi.gg.go.kr/RegionMnyFacltStus?"
+test="KEY=2902618a276345c78da7557883182ca9"
+
+storeNames=[]
+
+for i in range(1,100):
+    req=requests.get(api+test+"&pIndex="+str(i)+"&pSize=500&SIGUN_NM="+cityName)
+    html=req.text
+    soup=BeautifulSoup(html,"html.parser")
+    if soup.findAll('code')=="INFO-200":
+        break
+    storeName=soup.findAll('cmpnm_nm')
+    for n in storeName:
+        print(n)
+        storeNames.append(n.text)
+
+'''
+for j in storeNames:
+    print(j)'''
+
+
+
