@@ -1,18 +1,87 @@
 from tkinter import *
 from tkinter.ttk import Combobox
-import Search
+import urllib.request
+from xml.etree import ElementTree
+from xml.dom.minidom import parse, parseString
+import Search1
 WIDTH=1200
 HEIGHT=600
 class MainGUI():
+    def searchXML(self, cityName):
+        cityCode = Search1.queryCode(cityName)
+
+        for i in range(1, 100):
+            url = "https://openapi.gg.go.kr/RegionMnyFacltStus?KEY=2902618a276345c78da7557883182ca9&pIndex=" + str(
+                i) + "&pSize=500&SIGUN_CD=" + str(cityCode)
+            req = urllib.request.Request(url)
+            resp = urllib.request.urlopen(req)
+            strXml = resp.read().decode('utf-8')
+            if 'INFO-200' in strXml:
+                break
+            tree = ElementTree.fromstring(strXml)
+            items = tree.iter("row")
+            resutLst = []
+            for j in items:
+                rStr = []
+                if j.find('SIGUN_NM').text:  # 시이름 0
+                    rStr.append(j.find('SIGUN_NM').text)
+                else:
+                    rStr.append("정보 없음")
+
+                if j.find('CMPNM_NM').text:  # 상점이름 1
+                    rStr.append(j.find('CMPNM_NM').text)
+                else:
+                    rStr.append("정보 없음")
+
+                if j.find('INDUTYPE_NM').text:  # 업종이름 2
+                    rStr.append(j.find('INDUTYPE_NM').text)
+                else:
+                    rStr.append("정보 없음")
+
+                if j.find('REFINE_ROADNM_ADDR').text:  # 도로명 주소 3
+                    rStr.append(j.find('REFINE_ROADNM_ADDR').text)
+                else:
+                    rStr.append("정보 없음")
+
+                if j.find('REFINE_LOTNO_ADDR').text:  # 지번 주소 4
+                    rStr.append(j.find('REFINE_LOTNO_ADDR').text)
+                else:
+                    rStr.append("정보 없음")
+
+                if j.find('TELNO').text:  # 전화 번호 5
+                    rStr.append(j.find('TELNO').text)
+                else:
+                    rStr.append("정보 없음")
+
+                if j.find('REFINE_ZIP_CD').text:  # 우편 번호 6
+                    rStr.append(j.find('REFINE_ZIP_CD').text)
+                else:
+                    rStr.append("정보 없음")
+
+                if j.find('REFINE_WGS84_LAT').text:  # 위도 7
+                    rStr.append(j.find('REFINE_WGS84_LAT').text)
+                else:
+                    rStr.append("정보 없음")
+                if j.find('REFINE_WGS84_LAT').text:  # 경도 8
+                    rStr.append(j.find('REFINE_WGS84_LAT').text)
+                else:
+                    rStr.append("정보 없음")
+                temp = ""
+                for k in range(len(rStr)):
+                    temp += (rStr[k] + "    ")
+
+                self.listBox.insert(0,temp)
+
+
+
+
     def search(self):
         print(self.local.get())
 
-        self.rLst=Search.search(self.local.get())
-        self.changeSearchListbox()
-    def changeSearchListbox(self):
-        self.listBox.insert(0,"홍순조 천재")
-        for i in range(len(self.rLst)):
-            self.listBox.insert(i,self.rLst[i])
+        self.rLst=self.searchXML(self.local.get())
+
+
+
 
 
 

@@ -14,3 +14,10 @@
 
 어려웠던점
 
+induTypes=[] # 업종명
+    refine_roadNms=[] #도로명 주소
+    telNums=[]#전화번호
+    refine_zip_nums=[] # 우편번호
+    lats=[] #위도
+    logts=[] #경도
+    for
