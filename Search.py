@@ -48,7 +48,6 @@ def search(cityName):
 
         r=soup.findAll('row')
         for n in r:
-            print(n[0])
             resultLst.append(n.text)
 
     #print(len(storeNames)," ",len(induTypes)," ",len(refine_roadNms)," ",len(telNums)," ",len(refine_zip_nums)," ",len(lats)," ",len(logts))
