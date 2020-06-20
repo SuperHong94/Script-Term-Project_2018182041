@@ -1,33 +1,69 @@
-# -*- coding:utf-8 -*-
-import os
-import sys
-import http.client
-import urllib.request
-from xml.dom.minidom import parseString
+from bs4 import BeautifulSoup
+import requests
 
 
-client_id = "76gVHOGgqWwIyZsn3Mgl"
-client_secret = "ZiO5RaxsRM"
 
-#openAPI媛¢ https ��¦濡鬻�풰�黝�¦ �\ъK��린 ��臾몄�� HTTPSConnection ��¦ �\ъK�.
-conn = http.client.HTTPSConnection("openapi.naver.com")
-#conn.set_debuglevel(1) #debug mode �¦ㅼ��
-headers = {"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret}
-#encText = "love"
-encText = urllib.parse.quote('한국산업기술대')  #한글검색할때
-params = "?query=" + encText + "&display=10&start=1"
-#isbn='0596513984'
-#params = "?d_isbn="+isbn
 
-conn.request("GET", "/v1/search/book.xml" + params, None, headers)
-#conn.request("GET", "/v1/search/book_adv.xml" + params, None, headers) #상세검색
 
-res = conn.getresponse()
+def search(cityName):
+    api = "https://openapi.gg.go.kr/RegionMnyFacltStus?"
+    test = "KEY=2902618a276345c78da7557883182ca9"
+    storeNames = []
+    induTypes=[] # 업종명
+    refine_roadNms=[] #도로명 주소
+    telNums=[]#전화번호
+    refine_zip_nums=[] # 우편번호
+    lats=[] #위도
+    logts=[] #경도
 
-if int(res.status) == 200 :
-    print(parseString(res.read().decode('utf-8')).toprettyxml())
-else:
-    print ("HTTP Request is failed :" + res.reason)
-    print (res.read().decode('utf-8'))
+    resultLst = [] #검색결과
+    for i in range(1,10):
+        req=requests.get(api+test+"&pIndex="+str(i)+"&pSize=5&SIGUN_NM="+cityName)
+        html=req.text
+        soup=BeautifulSoup(html,"html.parser")
+        if soup.findAll('code')=="INFO-200":
+            break
+        '''storeName=soup.findAll('cmpnm_nm')
+        induType=soup.findAll('indutype_nm')
+        refine_roadNm=soup.findAll('refine_roadnm_addr')
+        telNum=soup.findAll('telno')
+        refine_zip_num=soup.findAll('reffine_zip_cd')
+        lat=soup.findAll('reffine_wgs84_lat')
+        logt=soup.findAll('reffine_wgs84_logt')
+        for n in storeName:
+            storeNames.append(n.text)
+        for n in induType:
+            induTypes.append(n.text)
 
-conn.close()
+        for n in refine_roadNm:
+            refine_roadNms.append(n.text)
+        for n in telNum:
+            telNums.append(n.text)
+        for n in refine_zip_num:
+            refine_zip_nums.append(n.text)
+        for n in lat:
+            lats.append(n.text)
+        for n in logt:
+            logts.append(n.text)'''
+
+        r=soup.findAll('row')
+        for n in r:
+            print(n[0])
+            resultLst.append(n.text)
+
+    #print(len(storeNames)," ",len(induTypes)," ",len(refine_roadNms)," ",len(telNums)," ",len(refine_zip_nums)," ",len(lats)," ",len(logts))
+
+     # [문자열정보,(위도,경도)]
+    #for j in range(2):
+       # resultLst.append((str(j+1)+'\t'+cityName+'\t'+storeNames[j]+'\t'+induTypes[j]+'\t'+refine_roadNms[j]+'\t'+telNums[j]+'\t'+refine_zip_nums[j]
+         #                 ,(eval(lats[j]),eval(logts[j]))))
+
+    print("검색완료")
+    return resultLst
+
+'''
+for j in storeNames:
+    print(j)'''
+
+
+
