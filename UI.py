@@ -8,11 +8,12 @@ WIDTH=1200
 HEIGHT=600
 class MainGUI():
     def searchXML(self, cityName):
+        self.listBox.delete(0,"end")
         cityCode = Search1.queryCode(cityName)
-
+        cnt=0
         for i in range(1, 100):
             url = "https://openapi.gg.go.kr/RegionMnyFacltStus?KEY=2902618a276345c78da7557883182ca9&pIndex=" + str(
-                i) + "&pSize=500&SIGUN_CD=" + str(cityCode)
+                i) + "&pSize=1000&SIGUN_CD=" + str(cityCode)
             req = urllib.request.Request(url)
             resp = urllib.request.urlopen(req)
             strXml = resp.read().decode('utf-8')
@@ -68,9 +69,10 @@ class MainGUI():
                     rStr.append("정보 없음")
                 temp = ""
                 for k in range(len(rStr)):
-                    temp += (rStr[k] + "    ")
 
-                self.listBox.insert(0,temp)
+                    temp += (rStr[k] + "    ")
+                cnt += 1
+                self.listBox.insert("end",str(cnt)+"    "+temp)
 
 
 
