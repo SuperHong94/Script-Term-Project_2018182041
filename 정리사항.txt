@@ -3,16 +3,27 @@
 
 
 
+구현한거
+openAPI (XML 방식)
+이미지
+지도
 
 
+미구현
+C++연동
+그래프
+텔레그램봇
+G-mail
 
 
 발표할때이야기할것
 
-스크롤바
+스크롤바 treeview
+
 
 
 어려웠던점
+UTF-8인코딩
 
 induTypes=[] # 업종명
     refine_roadNms=[] #도로명 주소

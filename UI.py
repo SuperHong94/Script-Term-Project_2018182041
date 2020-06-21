@@ -4,17 +4,21 @@ import urllib.request
 from xml.etree import ElementTree
 from tkinter.ttk import Treeview
 from xml.dom.minidom import parse, parseString
+import folium
+import webbrowser
 import Search1
 WIDTH=1200
 HEIGHT=600
 class MainGUI():
     def Selectclick(self,e):
-        result = self.treeview.item(self.treeview.selection()[0])
-        print(result['values'])
+        self.canvas.delete('all')
+        self.selectResult = self.treeview.item(self.treeview.selection()[0])
         #canvas.create_text(150, 100, text="테스트 문자열 입니다.", font=("나눔고딕코딩", 20), fill="blue")
-        self.canvas.delete(all)
-        for i in range(len(result['values'])):
-            self.canvas.create_text(200,30+20*i,text=str(result['values'][i]).strip(),font=("나눔고딕코딩", 10),justify=RIGHT)
+
+        for i in range(len(self.selectResult['values'])):
+            self.canvas.create_text(200,30+20*i,text=str(self.selectResult['values'][i]).strip(),font=("나눔고딕코딩", 10))
+        self.mapButton['state'] = 'active'
+        self.mailButton['state'] = 'active'
     def InitTreeView(self):
         self.resultFrame = LabelFrame(self.window, bg="white", width=100, height=HEIGHT / 2)
         scrollbar = Scrollbar(self.resultFrame, width=17, bd=10)
@@ -63,9 +67,9 @@ class MainGUI():
         self.treeview.delete(*self.treeview.get_children())
         cityCode = Search1.queryCode(cityName)
         cnt=0
-        for i in range(1, 5): #원래 100에 1000개많큼 읽기
+        for i in range(1, 100): #원래 100에 1000개많큼 읽기
             url = "https://openapi.gg.go.kr/RegionMnyFacltStus?KEY=2902618a276345c78da7557883182ca9&pIndex=" + str(
-                i) + "&pSize=10&SIGUN_CD=" + str(cityCode)
+                i) + "&pSize=1000&SIGUN_CD=" + str(cityCode)
             req = urllib.request.Request(url)
             resp = urllib.request.urlopen(req)
             strXml = resp.read().decode('utf-8')
@@ -133,14 +137,22 @@ class MainGUI():
 
 
     def search(self):
-        print(self.local.get())
-
+        self.mapButton['state']='disable'
         self.rLst=self.searchXML(self.local.get())
 
+    def SearchMap(self):
+        # 위도 경도 지정
+        x=eval(self.selectResult['values'][7])
+        y=eval(self.selectResult['values'][8])
+        map_osm = folium.Map(location=[x, y], zoom_start=13)
+        # 마커 지정
+        folium.Marker([x, y], popup=self.selectResult['values'][1]).add_to(map_osm)
+        # html 파일로 저장
+        map_osm.save('osm.html')
+        webbrowser.open_new('osm.html')
 
-
-
-
+    def sendMail(self):
+        pass
 
     def InitCityNames(self):
         self.local = StringVar()
@@ -154,12 +166,18 @@ class MainGUI():
     def __init__(self):
         self.window=Tk()
         self.window.title("경기도지역화페 가맹점 검색")
-        self.window.geometry("1400x600")
+        self.window.geometry("1400x650")
         self.window.configure(background='lightBlue')
+
+        #이미지 넣기
+        photo=PhotoImage(file="Gmoney.png")
+        imageLabel=Label(self.window,image=photo,background='lightBlue')
+        imageLabel.grid(row=0,column=1,pady=10,sticky=N+E+W)
+
 
         self.rLst=[] #검색결과 리스트
 
-
+        self.selectResult=None #선택된 결과
 
         self.searchFrame=LabelFrame(self.window)
         #self.searchFrame.grid(sticky=W+N,padx=5)
@@ -191,7 +209,13 @@ class MainGUI():
         Label(self.canvasFrame, text="가맹점 정보",font=("궁서체 15 bold")).pack(anchor='n')
         self.canvas.pack(anchor='center')
 
-        Button(self.canvasFrame,text="지도").pack(anchor='s')
+        self.mapButton=Button(self.canvasFrame,text="지도",command=self.SearchMap)
+        self.mapButton['state']='disable'
+        self.mapButton.pack(side=LEFT,padx=5)
+        self.mailButton = Button(self.canvasFrame, text="메일 보내기", command=self.sendMail)
+        self.mailButton['state'] = 'disable'
+        self.mailButton.pack(side=LEFT,padx=5)
+
 
 
 
