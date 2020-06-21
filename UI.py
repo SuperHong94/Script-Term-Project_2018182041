@@ -3,6 +3,7 @@ from tkinter.ttk import Combobox
 import urllib.request
 from xml.etree import ElementTree
 from tkinter.ttk import Treeview
+from Gmail import *
 from xml.dom.minidom import parse, parseString
 import folium
 import webbrowser
@@ -13,10 +14,17 @@ class MainGUI():
     def Selectclick(self,e):
         self.canvas.delete('all')
         self.selectResult = self.treeview.item(self.treeview.selection()[0])
-        #canvas.create_text(150, 100, text="테스트 문자열 입니다.", font=("나눔고딕코딩", 20), fill="blue")
+        #canvas.create_text(150, 100, text="테스트 문자열 입니다.", font=("나눔고딕코딩", 20), fill="blue"
 
-        for i in range(len(self.selectResult['values'])):
-            self.canvas.create_text(200,30+20*i,text=str(self.selectResult['values'][i]).strip(),font=("나눔고딕코딩", 10))
+        self.canvas.create_text(200,30+20*0,text="시 :"+str(self.selectResult['values'][0]).strip(),font=("나눔고딕코딩", 10))
+        self.canvas.create_text(200,30+20*1,text="상호명 :"+str(self.selectResult['values'][1]).strip(),font=("나눔고딕코딩", 10))
+        self.canvas.create_text(200,30+20*2,text="업종종류 :"+str(self.selectResult['values'][2]).strip(),font=("나눔고딕코딩", 10))
+        self.canvas.create_text(200,30+20*3,text="도로명 주소 :"+str(self.selectResult['values'][3]).strip(),font=("나눔고딕코딩", 10))
+        self.canvas.create_text(200,30+20*4,text="지번주소 :"+str(self.selectResult['values'][4]).strip(),font=("나눔고딕코딩", 10))
+        self.canvas.create_text(200,30+20*5,text="전화번호 :"+str(self.selectResult['values'][5]).strip(),font=("나눔고딕코딩", 10))
+        self.canvas.create_text(200,30+20*6,text="우편번호 :"+str(self.selectResult['values'][6]).strip(),font=("나눔고딕코딩", 10))
+        self.canvas.create_text(200,30+20*7,text="위도 :"+str(self.selectResult['values'][7]).strip(),font=("나눔고딕코딩", 10))
+        self.canvas.create_text(200,30+20*8,text="경도 :"+str(self.selectResult['values'][8]).strip(),font=("나눔고딕코딩", 10))
         self.mapButton['state'] = 'active'
         self.mailButton['state'] = 'active'
     def InitTreeView(self):
@@ -67,6 +75,7 @@ class MainGUI():
         self.treeview.delete(*self.treeview.get_children())
         cityCode = Search1.queryCode(cityName)
         cnt=0
+        #encText = urllib.parse.quote("부천시")
         for i in range(1, 100): #원래 100에 1000개많큼 읽기
             url = "https://openapi.gg.go.kr/RegionMnyFacltStus?KEY=2902618a276345c78da7557883182ca9&pIndex=" + str(
                 i) + "&pSize=1000&SIGUN_CD=" + str(cityCode)
@@ -152,7 +161,12 @@ class MainGUI():
         webbrowser.open_new('osm.html')
 
     def sendMail(self):
-        pass
+        address=self.mailAdress.get()
+        if address=="":
+            self.mailAdress.set("여기에 메일주소를 꼭 넣어야 메일 보낼 수 있어요")
+        htmlWrite(self.selectResult['values'])
+        SendMail(address)
+
 
     def InitCityNames(self):
         self.local = StringVar()
@@ -186,17 +200,21 @@ class MainGUI():
         Label(self.searchFrame,text="상호명", font = ("휴먼매직체",30)).grid(row=1,column=1)
         Label(self.searchFrame,text="업종", font = ("휴먼매직체",30)).grid(row=2,column=1)
         Label(self.searchFrame,text="도로명주소/지번주소", font = ("휴먼매직체",30)).grid(row=3,column=1)
+        Label(self.searchFrame,text="이메일", font = ("휴먼매직체",30)).grid(row=4,column=1)
         #self.local = StringVar() //함수로 잘되면 이부분 지우기
         #Entry(self.searchFrame, textvariable=self.local, font=("휴먼매직체", 30), justify=RIGHT, width=30).grid(row=0,column=2)
         self.InitCityNames()
         self.storeName = StringVar()
         Entry(self.searchFrame, textvariable=self.storeName, font = ("휴먼매직체",30), justify=RIGHT,width=30).grid(row=1, column=2)
-        self.valueType = StringVar()
+        self.valueType = StringVar() #업종
         Entry(self.searchFrame, textvariable=self.valueType, font = ("휴먼매직체",30), justify=RIGHT,width=30).grid(row=2, column=2)
         self.address = StringVar()
         Entry(self.searchFrame, textvariable=self.address, font = ("휴먼매직체",30), justify=RIGHT,width=30).grid(row=3, column=2)
-        self.futureValue = StringVar()
-        Label(self.searchFrame, textvariable=self.futureValue).grid(row=4, column=2, stick=E)
+        self.mailAdress = StringVar() #이거는 메일주소
+        self.mailAdress.set("")
+        Entry(self.searchFrame, textvariable=self.mailAdress, font=("휴먼매직체", 30), justify=RIGHT, width=30).grid(row=4,column=2)
+        #self.futureValue = StringVar() //이거뭐야?
+        #Label(self.searchFrame, textvariable=self.futureValue).grid(row=5, column=2, stick=E)
 
         Button(self.searchFrame, text="검색하기", font = ("휴먼매직체",20),command=self.search).grid(row=5, column=2, stick=E)
 
