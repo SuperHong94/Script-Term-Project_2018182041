@@ -111,7 +111,7 @@ class GUI(tk.Frame):
 
         # or you can provide a list of column headers,
         # which will be added to the tops of the columns
-        b = MultiListbox(self, ['col 1', 'num 2', 'thing 3'], width=4)
+        b = MultiListbox(self, ['col 1', 'num 2', 'thing 3','dddd'], width=4)
         b.add_data(range(500))
         b.pack(fill=tk.BOTH, expand=True)
 
