@@ -10,7 +10,7 @@ import folium
 import webbrowser
 import spam
 import random
-
+import teller
 
 WIDTH=1200
 HEIGHT=600
@@ -87,7 +87,7 @@ class MainGUI():
 
         for i in range(1, 100): #원래 100에 1000개많큼 읽기
             url = "https://openapi.gg.go.kr/RegionMnyFacltStus?KEY=2902618a276345c78da7557883182ca9&pIndex=" + str(
-                i) + "&pSize=1000&SIGUN_CD=" + str(cityCode)+"&CMPNM_NM="+storeName+"&(REFINE_ROADNM_ADDR="+roadAddress+"&REFINE_LOTNO_ADDR="+localAddress
+                i) + "&pSize=1000&SIGUN_CD=" + str(cityCode)+"&CMPNM_NM="+storeName+"&REFINE_ROADNM_ADDR="+roadAddress+"&REFINE_LOTNO_ADDR="+localAddress
             req = urllib.request.Request(url)
             resp = urllib.request.urlopen(req)
             strXml = resp.read().decode('utf-8')
@@ -269,7 +269,9 @@ class MainGUI():
 
 
 
-
+    def telBot(self):
+        teller.action()
+        pass
 
 
 
@@ -338,6 +340,8 @@ class MainGUI():
         self.mailButton = Button(self.canvasFrame, text="메일 보내기", command=self.sendMail)
         self.mailButton['state'] = 'disable'
         self.mailButton.pack(side=LEFT,padx=5)
+        #self.telButton = Button(self.canvasFrame, text="텔레그램 봇 연결", command=self.telBot)
+        #self.telButton.pack(side=LEFT, padx=5)
 
         self.MainFrame2=Frame(self.window,background='lightBlue')
         self.notebook.add(self.MainFrame2,text="도시별 월 사용 비교")
@@ -346,6 +350,7 @@ class MainGUI():
 
 
         self.window.mainloop()
+
 
 
 

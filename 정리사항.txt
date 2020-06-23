@@ -10,14 +10,12 @@ openAPI (XML 방식)
 지도
 G-mail
 C++연동
-
-
-미구현
 그래프
 텔레그램봇
 
-ggopen@gg.go.kr
-ggopen@gd.go.kr
+미구현
+
+
 
 발표할때이야기할것
 
