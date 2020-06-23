@@ -9,13 +9,15 @@ openAPI (XML 방식)
 이미지
 지도
 G-mail
+C++연동
+
 
 미구현
-C++연동
 그래프
 텔레그램봇
 
-
+ggopen@gg.go.kr
+ggopen@gd.go.kr
 
 발표할때이야기할것
 

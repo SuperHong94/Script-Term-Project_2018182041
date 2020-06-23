@@ -9,6 +9,7 @@ from xml.dom.minidom import parse, parseString
 import folium
 import webbrowser
 import spam
+import random
 
 
 WIDTH=1200
@@ -30,7 +31,7 @@ class MainGUI():
         self.mapButton['state'] = 'active'
         self.mailButton['state'] = 'active'
     def InitTreeView(self):
-        self.resultFrame = LabelFrame(self.window, bg="white", width=100, height=HEIGHT / 2)
+        self.resultFrame = LabelFrame(self.MainFrame1, bg="white", width=100, height=HEIGHT / 2)
         scrollbar = Scrollbar(self.resultFrame, width=17, bd=10)
         scrollbar.pack(side=RIGHT, fill=Y)
         scrollbar1 = Scrollbar(self.resultFrame, orient=HORIZONTAL, width=17, bd=10)
@@ -77,7 +78,6 @@ class MainGUI():
         self.treeview.delete(*self.treeview.get_children())
 
         cityCode = spam.queryCode(cityName.split('/')[1])
-        print(cityCode)
 
         cnt=0
         #encText = urllib.parse.quote("부천시")
@@ -95,7 +95,6 @@ class MainGUI():
                 break
             tree = ElementTree.fromstring(strXml)
             items = tree.iter("row")
-            resutLst = []
             for j in items:
                 rStr = []
                 if j.find('SIGUN_NM').text:  # 시이름 0
@@ -191,19 +190,105 @@ class MainGUI():
                 ]
         Combobox(self.searchFrame, values=data,textvariable=self.local,  font=("휴먼매직체",28),justify=RIGHT, width=30).grid(row=0,column=2)
 
+    def DrawGraph(self):
+        self.FrameName['text'] = self.local1.get() + " 월별 지역화폐 카드 사용량 비교"
+        result = []
+        # == 결과 가져오기
+        cityName = self.local1.get() #local1은 그래프
+        cityCode = spam.queryCode(cityName.split('/')[1])
+
+        url = "https://openapi.gg.go.kr/RegionMnyPublctUse?KEY=67a6b558f57643aca2706cc7b8a40bb7&pIndex=1&pSize=1000&SIGUN_CD=" + str(cityCode)
+
+        req = urllib.request.Request(url)
+        resp = urllib.request.urlopen(req)
+        strXml = resp.read().decode('utf-8')
+        tree = ElementTree.fromstring(strXml)
+        items = tree.iter("row")
+
+        for j in items:
+            rStr = []
+            if j.find('CARD_USE_AMT').text!=None:  # 사용량
+                if j.find('STD_YM').text:  # 날짜
+                    if (j.find('STD_YM').text).split('-')[1]>'06':
+                        rStr.append('2019-'+j.find('STD_YM').text.split('-')[1])
+                    else:
+                        rStr.append(j.find('STD_YM').text)
+                if j.find('SIGUN_NM').text:  # 시이름 0
+                    rStr.append(j.find('SIGUN_NM').text)
+                if j.find('CARD_USE_AMT').text:  # 사용량
+                    rStr.append(j.find('CARD_USE_AMT').text)
+
+                temp=tuple(rStr)
+                result.append(temp)
+
+        result=list(set(result))
+        result.sort() #정보 뽑아내기 성공!
+        counts = [eval(result[x][2]) for x in range(len(result))]
+        maxCount=max(counts) #가장 높은 값 뽑아내기
+
+        HEIGHT=400
+        rangeValue=len(counts)
+        barWidth = (1200 - rangeValue) / rangeValue  # 1개 막대그래프의 너비
+
+        self.graphCanvas.delete('histogram')
+        for i in range(rangeValue):
+            color = '{:06x}'.format(random.randint(0, 0x1000000))
+            self.graphCanvas.create_rectangle(50 + i * barWidth, (HEIGHT - (HEIGHT - 80) * (counts[i] / maxCount))-40,
+                                             50+ (i + 1) * barWidth, HEIGHT-20,fill=('#'+color), tags='histogram')
+            self.graphCanvas.create_text(100 + i * barWidth, (HEIGHT - (HEIGHT - 80) * counts[i] / maxCount) - 50,
+                                        text=str(counts[i]), tags='histogram')
+            self.graphCanvas.create_text(100 + i * barWidth, HEIGHT-10,
+                                         text=str(result[i][0]), tags='histogram')
+
+
+    def InitGraph(self):
+
+        self.local1 = StringVar()
+        self.local1.set("가평군/Gapyeong")
+        data = ["가평군/Gapyeong", "고양시/Goyang", "과천시/Gwacheon", "광명시/Gwangmyeong", "광주시/Gwangju", "구리시/Guri",
+                "군포시/Gunpo", "김포시/Gimpo",
+                "남양주시/Namyangju", "동두천시/Dongducheon", "부천시/Bucheon", "성남시/Seongnam", "수원시/Suwon",
+                "시흥시/Siheung", "안산시/Ansan", "안성시/Anseong", "안양시/Anyang", "양주시/Yangju",
+                "양평군/Yangpyeong", "여주시/Yeoju", "연천군/Yeoncheon", "오산시/Osan", "용인시/Yongin", "의왕시/Uiwang",
+                "의정부시/Uijeongbu", "이천시/Icheon", "파주시/Paju", "평택시/Pyeongtaek", "포천시/Pocheon", "하남시/Hanam",
+                "화성시/Hwaseong"
+                ]
+        Combobox(self.MainFrame2, values=data, textvariable=self.local1, font=("휴먼매직체", 28), justify=RIGHT,
+                 width=20).grid(row=0,column=0,sticky=N+W)
+
+
+        self.graphFrame=Frame(self.MainFrame2)
+        self.FrameName = Label(self.graphFrame, text=self.local1.get() + " 월별 지역화폐 카드 사용량 비교", bg='white',font=("휴먼매직체 28 bold"))
+        self.FrameName.pack(side='top')
+        self.graphFrame.grid(sticky=N+W,pady=10)
+        self.graphCanvas=Canvas(self.graphFrame,width=1300,height=400,bg='white')
+        self.graphCanvas.pack(pady=10)
+
+        self.drawButton = Button(self.graphFrame, text="그래프 그리기", command=self.DrawGraph)
+        self.drawButton.pack()
+
+
+
+
+
+
 
     def __init__(self):
         self.window=Tk()
         self.window.title("경기도지역화페 가맹점 검색")
-        self.window.geometry("1400x650")
+        self.window.geometry("1400x680")
         self.window.configure(background='lightBlue')
 
-        #self.notebook = tkinter.ttk.Notebook(self.window, width=1400, height=600)
-        #self.notebook.pack()
+        self.notebook = tkinter.ttk.Notebook(self.window, width=1400, height=680)
+        self.notebook.pack()
 
+
+
+        self.MainFrame1=Frame(self.window,background='lightBlue')
+        self.notebook.add(self.MainFrame1, text="검색하기")
         #이미지 넣기
         photo=PhotoImage(file="Gmoney.png")
-        imageLabel=Label(self.window,image=photo,background='lightBlue')
+        imageLabel=Label(self.MainFrame1,image=photo,background='lightBlue')
         imageLabel.grid(row=0,column=1,pady=10,sticky=N+E+W)
 
 
@@ -211,7 +296,7 @@ class MainGUI():
 
         self.selectResult=None #선택된 결과
 
-        self.searchFrame=LabelFrame(self.window)
+        self.searchFrame=LabelFrame(self.MainFrame1)
         #self.searchFrame.grid(sticky=W+N,padx=5)
         self.searchFrame.grid(row=0,column=0,padx=5)
         Label(self.searchFrame,text="지역", font = ("휴먼매직체",30)).grid(row=0,column=1)
@@ -241,7 +326,7 @@ class MainGUI():
         #검색 결과  리스트박스 스크롤바가 있는 프레임
         self.InitTreeView()
 
-        self.canvasFrame=Frame(self.window,height=100)
+        self.canvasFrame=Frame(self.MainFrame1,height=100)
         self.canvasFrame.grid(row=1,column=1,pady=5,padx=5,sticky=S+N)
         self.canvas=Canvas(self.canvasFrame,bg='white')
         Label(self.canvasFrame, text="가맹점 정보",font=("궁서체 15 bold")).pack(anchor='n')
@@ -254,6 +339,9 @@ class MainGUI():
         self.mailButton['state'] = 'disable'
         self.mailButton.pack(side=LEFT,padx=5)
 
+        self.MainFrame2=Frame(self.window,background='lightBlue')
+        self.notebook.add(self.MainFrame2,text="도시별 월 사용 비교")
+        self.InitGraph()
 
 
 

@@ -1,17 +1,21 @@
 from tkinter import *
 import tkinter.ttk
-
 window=Tk()
-window.title("tkinter notebook")
+window.title("경기도지역화페 가맹점 검색")
+window.configure(background='lightBlue')
+
 
 notebook=tkinter.ttk.Notebook(window, width=800, height=600)
 notebook.pack()
 
+
+
 frame1=Frame(window)
 notebook.add(frame1, text="페이지1")
+photo=PhotoImage(file="Gmoney.png")
+imageLabel=Label(frame1,image=photo,background='lightBlue')
+imageLabel.grid(row=0,column=1,pady=10,sticky=N+E+W)
 
-label1=Label(frame1, text="페이지1의 내용", fg='red', font='helvetica 48')
-label1.pack()
 
 frame2=Frame(window)
 notebook.add(frame2, text="페이지2")
