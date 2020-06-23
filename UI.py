@@ -1,4 +1,5 @@
 from tkinter import *
+import tkinter.ttk
 from tkinter.ttk import Combobox
 import urllib.request
 from xml.etree import ElementTree
@@ -7,14 +8,15 @@ from Gmail import *
 from xml.dom.minidom import parse, parseString
 import folium
 import webbrowser
-import Search1
+import spam
+
+
 WIDTH=1200
 HEIGHT=600
 class MainGUI():
     def Selectclick(self,e):
         self.canvas.delete('all')
         self.selectResult = self.treeview.item(self.treeview.selection()[0])
-        #canvas.create_text(150, 100, text="테스트 문자열 입니다.", font=("나눔고딕코딩", 20), fill="blue"
 
         self.canvas.create_text(200,30+20*0,text="시 :"+str(self.selectResult['values'][0]).strip(),font=("나눔고딕코딩", 10))
         self.canvas.create_text(200,30+20*1,text="상호명 :"+str(self.selectResult['values'][1]).strip(),font=("나눔고딕코딩", 10))
@@ -70,15 +72,22 @@ class MainGUI():
         scrollbar1["command"] = self.treeview.xview
 
         pass
-    def searchXML(self, cityName):
+    def searchXML(self, cityName,storeName="",roadAddress="",localAddress=""):
         #self.listBox.delete(0,"end")
         self.treeview.delete(*self.treeview.get_children())
-        cityCode = Search1.queryCode(cityName)
+
+        cityCode = spam.queryCode(cityName.split('/')[1])
+        print(cityCode)
+
         cnt=0
         #encText = urllib.parse.quote("부천시")
+        storeName=urllib.parse.quote(storeName)
+        roadAddress=urllib.parse.quote(roadAddress)
+        localAddress=urllib.parse.quote(localAddress)
+
         for i in range(1, 100): #원래 100에 1000개많큼 읽기
             url = "https://openapi.gg.go.kr/RegionMnyFacltStus?KEY=2902618a276345c78da7557883182ca9&pIndex=" + str(
-                i) + "&pSize=1000&SIGUN_CD=" + str(cityCode)
+                i) + "&pSize=1000&SIGUN_CD=" + str(cityCode)+"&CMPNM_NM="+storeName+"&(REFINE_ROADNM_ADDR="+roadAddress+"&REFINE_LOTNO_ADDR="+localAddress
             req = urllib.request.Request(url)
             resp = urllib.request.urlopen(req)
             strXml = resp.read().decode('utf-8')
@@ -147,16 +156,17 @@ class MainGUI():
 
     def search(self):
         self.mapButton['state']='disable'
-        self.rLst=self.searchXML(self.local.get())
+        self.rLst=self.searchXML(self.local.get(),storeName=self.storeName.get(),
+                                 roadAddress=self.roadAddress.get(),localAddress=self.localAddress.get()) #storeName="",storeType="",roadAddress=""
 
     def SearchMap(self):
         # 위도 경도 지정
         x=eval(self.selectResult['values'][7])
         y=eval(self.selectResult['values'][8])
         map_osm = folium.Map(location=[x, y], zoom_start=13)
-        # 마커 지정
+
         folium.Marker([x, y], popup=self.selectResult['values'][1]).add_to(map_osm)
-        # html 파일로 저장
+
         map_osm.save('osm.html')
         webbrowser.open_new('osm.html')
 
@@ -170,10 +180,15 @@ class MainGUI():
 
     def InitCityNames(self):
         self.local = StringVar()
-        self.local.set("가평군")
-        data = ["가평군", "고양시", "과천시", "광명시", "광주시", "구리시", "군포시", "김포시",
-                "남양주시", "동두천시", "부천시", "성남시", "수원시", "시흥시", "안산시", "안성시", "안양시", "양주시",
-                "양평군", "여주시", "연천군", "오산시", "용인시", "의왕시", "의정부시", "이천시", "파주시", "평택시", "포천시", "하남시", "화성시"]
+        self.local.set("가평군/Gapyeong")
+        data = ["가평군/Gapyeong", "고양시/Goyang", "과천시/Gwacheon", "광명시/Gwangmyeong", "광주시/Gwangju", "구리시/Guri",
+                "군포시/Gunpo", "김포시/Gimpo",
+                "남양주시/Namyangju", "동두천시/Dongducheon", "부천시/Bucheon", "성남시/Seongnam", "수원시/Suwon",
+                "시흥시/Siheung", "안산시/Ansan", "안성시/Anseong", "안양시/Anyang", "양주시/Yangju",
+                "양평군/Yangpyeong", "여주시/Yeoju", "연천군/Yeoncheon", "오산시/Osan", "용인시/Yongin", "의왕시/Uiwang",
+                "의정부시/Uijeongbu", "이천시/Icheon", "파주시/Paju", "평택시/Pyeongtaek", "포천시/Pocheon", "하남시/Hanam",
+                "화성시/Hwaseong"
+                ]
         Combobox(self.searchFrame, values=data,textvariable=self.local,  font=("휴먼매직체",28),justify=RIGHT, width=30).grid(row=0,column=2)
 
 
@@ -182,6 +197,9 @@ class MainGUI():
         self.window.title("경기도지역화페 가맹점 검색")
         self.window.geometry("1400x650")
         self.window.configure(background='lightBlue')
+
+        #self.notebook = tkinter.ttk.Notebook(self.window, width=1400, height=600)
+        #self.notebook.pack()
 
         #이미지 넣기
         photo=PhotoImage(file="Gmoney.png")
@@ -198,18 +216,20 @@ class MainGUI():
         self.searchFrame.grid(row=0,column=0,padx=5)
         Label(self.searchFrame,text="지역", font = ("휴먼매직체",30)).grid(row=0,column=1)
         Label(self.searchFrame,text="상호명", font = ("휴먼매직체",30)).grid(row=1,column=1)
-        Label(self.searchFrame,text="업종", font = ("휴먼매직체",30)).grid(row=2,column=1)
-        Label(self.searchFrame,text="도로명주소/지번주소", font = ("휴먼매직체",30)).grid(row=3,column=1)
+
+        Label(self.searchFrame,text="도로명주소", font = ("휴먼매직체",30)).grid(row=2,column=1)
+        Label(self.searchFrame,text="지번주소", font = ("휴먼매직체",30)).grid(row=3,column=1)
         Label(self.searchFrame,text="이메일", font = ("휴먼매직체",30)).grid(row=4,column=1)
         #self.local = StringVar() //함수로 잘되면 이부분 지우기
         #Entry(self.searchFrame, textvariable=self.local, font=("휴먼매직체", 30), justify=RIGHT, width=30).grid(row=0,column=2)
         self.InitCityNames()
         self.storeName = StringVar()
         Entry(self.searchFrame, textvariable=self.storeName, font = ("휴먼매직체",30), justify=RIGHT,width=30).grid(row=1, column=2)
-        self.valueType = StringVar() #업종
-        Entry(self.searchFrame, textvariable=self.valueType, font = ("휴먼매직체",30), justify=RIGHT,width=30).grid(row=2, column=2)
-        self.address = StringVar()
-        Entry(self.searchFrame, textvariable=self.address, font = ("휴먼매직체",30), justify=RIGHT,width=30).grid(row=3, column=2)
+        self.roadAddress = StringVar()  #도로명주소
+        Entry(self.searchFrame, textvariable=self.roadAddress, font = ("휴먼매직체",30), justify=RIGHT,width=30).grid(row=2, column=2)
+        self.localAddress = StringVar()  # 지번주소
+        Entry(self.searchFrame, textvariable=self.localAddress, font=("휴먼매직체", 30), justify=RIGHT, width=30).grid(row=3,
+                                                                                                             column=2)
         self.mailAdress = StringVar() #이거는 메일주소
         self.mailAdress.set("")
         Entry(self.searchFrame, textvariable=self.mailAdress, font=("휴먼매직체", 30), justify=RIGHT, width=30).grid(row=4,column=2)

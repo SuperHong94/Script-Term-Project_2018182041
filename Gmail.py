@@ -57,7 +57,7 @@ def SendMail(add):
     s.ehlo()
     s.starttls()
     s.ehlo()
-    s.login("ghdtnswh213@gmail.com","****") #여기에 비밀번호 써야 된다.
+    s.login("ghdtnswh213@gmail.com","**") #여기에 비밀번호 써야 된다.
     s.sendmail(senderAddr , [recipientAddr], msg.as_string())
     s.close()
 
